@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capas Pizzeria</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="favicon.ico" type="image/ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .background {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0.8;
+            filter: blur(1px);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(5px);
+            padding: 20px;
+            transition: left 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar nav {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .sidebar nav a:hover {
+            color: #ddd;
+        }
+
+        .sidebar .language-selector {
+            margin-top: 30px;
+        }
+
+        .sidebar .language-selector label {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .sidebar .language-selector select {
+            width: 100%;
+            padding: 5px;
+            font-size: 1rem;
+        }
+
+        #desktop-nav {
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(3px);
+            padding: 15px 40px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1100;
+        }
+
+        #desktop-nav nav {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        #desktop-nav nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        #desktop-nav nav a:hover {
+            color: #ddd;
+        }
+
+        .desktop-language {
+            position: absolute;
+            right: 40px;
+            top: 15px;
+        }
+
+        .desktop-language label {
+            margin-right: 5px;
+            font-size: 1rem;
+        }
+
+        .desktop-language select {
+            padding: 3px;
+            font-size: 1rem;
+        }
+
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: none;
+            color: #fff;
+            padding: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1100;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(0, 0, 0, 1);
+        }
+
+        .container {
+            padding: 120px 20px 60px;
+            text-align: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .logo-container {
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: url('https://media.discordapp.net/attachments/1345556647644233798/1346555055020441620/a_0342350cae8f0d169eee5709007eeea9_1.gif?ex=67c89c9e&is=67c74b1e&hm=6a0ddce8ba277c91608e61f42af02365858360f55d2acdf64d56b7050e91daf2') center/cover no-repeat;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.9));
+            margin: 0 auto;
+            transition: none;
+        }
+
+        .title {
+            font-size: 4rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            text-shadow: 0 0 15px #fff;
+            color: #FFD700;
+        }
+
+        .rainbow-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: #444;
+        }
+
+        .welcome-text {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #444;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .social-icons a {
+            color: #8A2BE2;
+            font-size: 2.5rem;
+            transition: transform 0.4s ease, color 0.3s ease;
+        }
+
+        .social-icons a:hover {
+            transform: translateY(-5px) scale(1.1);
+            color: #7A1CD2;
+        }
+
+        .featured-profile {
+            margin: 0 auto;
+            text-align: center;
+            max-width: 300px;
+        }
+
+        #members-section,
+        #about-us {
+            display: none;
+        }
+
+        #members-section {
+            padding: 80px 40px;
+            background: rgba(0, 0, 0, 0.60);
+            backdrop-filter: blur(5px);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            justify-items: center;
+        }
+
+        .member-profile {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            cursor: default;
+        }
+
+        .member-profile:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .member-profile img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.7));
+            margin-bottom: 15px;
+        }
+
+        .member-profile h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+
+        .member-profile p {
+            font-size: 1rem;
+            color: #ccc;
+        }
+
+        #about-us {
+            padding: 60px 20px 80px;
+            background: rgba(0, 0, 0, 0.60);
+            backdrop-filter: blur(5px);
+            text-align: center;
+        }
+
+        #about-us h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #FFD700;
+        }
+
+        #about-us p {
+            max-width: 700px;
+            margin: 0 auto 15px;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        @media (min-width: 768px) {
+
+            .menu-toggle,
+            .sidebar {
+                display: none;
+            }
+
+            #desktop-nav {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <img class="background"
+        src="https://media.discordapp.net/attachments/1344057370459897898/1346587505360769114/IMG_1730.png?ex=67c8bad7&is=67c76957&hm=537c72d9d9070f28504d764cacbd6f71e30a0e9468a1289c7ff7da0407e59b1b&=&format=webp&quality=lossless&width=710&height=468"
+        alt="Fondo">
+    <button class="menu-toggle" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
+    <div class="sidebar" id="sidebar">
+        <nav>
+            <a href="#members-section" data-key="nav_members">Miembros</a>
+            <a href="#about-us" data-key="nav_about">Quiénes Somos</a>
+            <a href="https://discord.gg/WKPhhHu8Nn" target="_blank" data-key="nav_alice">Alice-C2</a>
+        </nav>
+        <div class="language-selector">
+            <label for="language-selector">Idioma:</label>
+            <select id="language-selector">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="it">Italiano</option>
+                <option value="pt">Português</option>
+            </select>
+        </div>
+    </div>
+    <nav id="desktop-nav">
+        <nav>
+            <a href="#members-section" data-key="nav_members">Miembros</a>
+            <a href="#about-us" data-key="nav_about">Quiénes Somos</a>
+            <a href="https://discord.gg/WKPhhHu8Nn" target="_blank" data-key="nav_alice">Alice-C2</a>
+        </nav>
+        <div class="desktop-language">
+            <label for="language-selector-desktop">Idioma:</label>
+            <select id="language-selector-desktop">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="it">Italiano</option>
+                <option value="pt">Português</option>
+            </select>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="logo-container">
+            <div class="logo" aria-label="Logo principal de Capas Pizzeria"></div>
+            <div class="rainbow-text" data-key="rainbow_text">¡Gracias por unirte a Capas Pizzeria!</div>
+        </div>
+        <h1 class="title" data-key="title">Capas Pizzeria</h1>
+        <p class="welcome-text">Bienvenido a la mejor pizzería online, donde la pasión por el sabor se une a la
+            innovación.</p>
+        <div class="social-icons">
+            <a href="https://github.com/" target="_blank" aria-label="GitHub">
+                <i class="fa-solid fa-pizza-slice"></i>
+            </a>
+            <a href="https://discord.gg/9tjZh5mgwX" target="_blank" aria-label="Discord">
+                <i class="fab fa-discord"></i>
+            </a>
+        </div>
+        <div class="member-profile featured-profile">
+            <img src="https://cdn.discordapp.com/avatars/1136302112364572732/8a817e950d907f8b06800f5f289c2ca1.png?size=2048"
+                alt="Perfil de 8c7x">
+            <h3>8c7x</h3>
+            <p>Developer</p>
+        </div>
+        <section id="members-section" style="display: none;">
+            <div class="member-profile">
+                <img src="https://cdn.discordapp.com/avatars/1319905917164191754/994094873f85115b550e4d11da80bb2a.png?size=2048"
+                    alt="Perfil de Mark">
+                <h3>Mark</h3>
+                <p>Founder</p>
+            </div>
+            <div class="member-profile">
+                <img src="https://cdn.discordapp.com/avatars/807631600862101555/a_be98cf519f64d38679cc93de19d84c9c.gif?size=2048"
+                    alt="Perfil de theeste">
+                <h3>theeste</h3>
+                <p>Founder</p>
+            </div>
+            <div class="member-profile">
+                <img src="https://cdn.discordapp.com/avatars/1180335993199534090/c504234e9812185c0a8b493566fd0534.png?size=2048"
+                    alt="Perfil de insa">
+                <h3>insa</h3>
+                <p>Founder</p>
+            </div>
+            <div class="member-profile">
+                <img src="https://cdn.discordapp.com/avatars/1320798283660263447/65a142a6e5447d45fe01cb19a5eb50a1.png?size=2048"
+                    alt="Perfil de its mateo">
+                <h3>its mateo</h3>
+                <p>Administrator</p>
+            </div>
+            <div class="member-profile">
+                <img src="https://cdn.discordapp.com/avatars/824079407248310293/2d620f23b33c3d7d08f654f042c90b82.png?size=2048"
+                    alt="Perfil de imflow4d">
+                <h3>imflow4d</h3>
+                <p>Seguridad</p>
+            </div>
+            <div class="member-profile">
+                <img src="https://cdn.discordapp.com/attachments/1344057370459897898/1346586286760263710/9fb55a11e6c0bb14a4f6e8e46393168e.png?ex=67c8b9b5&is=67c76835&hm=ef1ec3457f108eab38cd41643eac58edb01bb53695defa9c54fe800385eee371"
+                    alt="Perfil de Astharot">
+                <h3>Astharot</h3>
+                <p>Gerente</p>
+            </div>
+            <div class="member-profile">
+                <img src="https://cdn.discordapp.com/attachments/1344057370459897898/1346586546756915335/709b672084c5bb70a9d668169bb63592.png?ex=67c8b9f3&is=67c76873&hm=9d263e574484ef14a28e8548fabc7c67a753898032e813dc62f24df32047bd4f"
+                    alt="Perfil de Su Zaizai">
+                <h3>Su Zaizai</h3>
+                <p>Gerente</p>
+            </div>
+            <div class="member-profile">
+                <img src="https://cdn.discordapp.com/attachments/1344057370459897898/1346586286760263710/9fb55a11e6c0bb14a4f6e8e46393168e.png?ex=67c8b9b5&is=67c76835&hm=ef1ec3457f108eab38cd41643eac58edb01bb53695defa9c54fe800385eee371&"
+                    alt="Perfil de XIII">
+                <h3>XIII</h3>
+                <p>Rey</p>
+            </div>
+        </section>
+        <section id="about-us" style="display: none;">
+            <h2 data-key="about_title">Quiénes Somos</h2>
+            <p data-key="about_p1">
+                ¡Bienvenidos a la Comunidad de Capas Pizzeria! Aquí celebramos el amor por la pizza, desde la masa
+                crujiente y el queso derretido hasta las combinaciones de ingredientes que despiertan pasiones.
+            </p>
+            <p data-key="about_p2">
+                En este espacio compartimos recetas caseras, recomendaciones de pizzerías y trucos de cocina. Además,
+                somos una comunidad dinámica que organiza eventos temáticos y debates sobre cuál es la mejor pizza.
+            </p>
+            <p data-key="about_p3">
+                Nuestra misión es unir a los amantes de este icónico platillo, fomentar el intercambio de ideas y
+                disfrutar juntos de la pasión por el sabor. ¡Ponte cómodo, sírvete una porción y acompáñanos en esta
+                fiesta del sabor!
+            </p>
+        </section>
+    </div>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.querySelector('.menu-toggle');
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+        }
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+        document.addEventListener('click', (e) => {
+            if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== menuToggle) {
+                sidebar.classList.remove('open');
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'm') {
+                toggleSidebar();
+            }
+            if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        });
+        let activeSection = null;
+        function toggleSection(sectionEl) {
+            if (activeSection === sectionEl) {
+                sectionEl.style.display = "none";
+                activeSection = null;
+            } else {
+                if (activeSection) {
+                    activeSection.style.display = "none";
+                }
+                sectionEl.style.display = "block";
+                activeSection = sectionEl;
+            }
+        }
+        const mobileNavLinks = document.querySelectorAll('#sidebar nav a');
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('href').substring(1);
+                const sectionEl = document.getElementById(sectionId);
+                toggleSection(sectionEl);
+                sidebar.classList.remove('open');
+            });
+        });
+        const desktopNavLinks = document.querySelectorAll('#desktop-nav nav a');
+        desktopNavLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('href').substring(1);
+                const sectionEl = document.getElementById(sectionId);
+                toggleSection(sectionEl);
+            });
+        });
+        function translatePage(lang) {
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            const mobileLinks = document.querySelectorAll('#sidebar nav a');
+            mobileLinks.forEach(link => {
+                const key = link.getAttribute('data-key');
+                if (translations[lang] && translations[lang][key]) {
+                    link.textContent = translations[lang][key];
+                }
+            });
+            const desktopLinks = document.querySelectorAll('#desktop-nav nav a');
+            desktopLinks.forEach(link => {
+                const key = link.getAttribute('data-key');
+                if (translations[lang] && translations[lang][key]) {
+                    link.textContent = translations[lang][key];
+                }
+            });
+        }
+        const languageSelector = document.getElementById('language-selector');
+        const desktopLanguageSelector = document.getElementById('language-selector-desktop');
+        const translations = {
+            es: {
+                title: "Capas Pizzeria",
+                rainbow_text: "¡Gracias por unirte a Capas Pizzeria!",
+                nav_members: "Miembros",
+                nav_about: "Quiénes Somos",
+                nav_alice: "Alice-C2",
+                about_title: "Quiénes Somos",
+                about_p1: "¡Bienvenidos a la Comunidad de Capas Pizzeria! Aquí celebramos el amor por la pizza, desde la masa crujiente y el queso derretido hasta las combinaciones de ingredientes que despiertan pasiones.",
+                about_p2: "En este espacio compartimos recetas caseras, recomendaciones de pizzerías y trucos de cocina. Además, somos una comunidad dinámica que organiza eventos temáticos y debates sobre cuál es la mejor pizza.",
+                about_p3: "Nuestra misión es unir a los amantes de este icónico platillo, fomentar el intercambio de ideas y disfrutar juntos de la pasión por el sabor. ¡Ponte cómodo, sírvete una porción y acompáñanos en esta fiesta del sabor!"
+            },
+            en: {
+                title: "Capas Pizzeria",
+                rainbow_text: "Thanks for joining Capas Pizzeria!",
+                nav_members: "Members",
+                nav_about: "About Us",
+                nav_alice: "Alice-C2",
+                about_title: "About Us",
+                about_p1: "Welcome to the Capas Pizzeria Community! Here we celebrate the love for pizza, from the crispy dough and melted cheese to the ingredient combinations that ignite passions.",
+                about_p2: "In this space, we share homemade recipes, pizzeria recommendations, and cooking tips. Moreover, we are a dynamic community that organizes themed events and debates on what makes the best pizza.",
+                about_p3: "Our mission is to unite pizza lovers, foster the exchange of ideas, and enjoy the passion for flavor together. Get comfortable, serve yourself a slice, and join us in this feast of taste!"
+            },
+            fr: {
+                title: "Capas Pizzeria",
+                rainbow_text: "Merci de rejoindre Capas Pizzeria !",
+                nav_members: "Membres",
+                nav_about: "Qui sommes-nous ?",
+                nav_alice: "Alice-C2",
+                about_title: "Qui sommes-nous ?",
+                about_p1: "Bienvenue dans la communauté de Capas Pizzeria ! Ici, nous célébrons l'amour de la pizza, de la pâte croustillante au fromage fondu, avec des combinaisons d'ingrédients qui suscitent des passions.",
+                about_p2: "Dans cet espace, nous partageons des recettes maison, des recommandations de pizzerias et des astuces culinaires. De plus, nous sommes une communauté dynamique qui organise des événements thématiques et des débats sur la meilleure pizza.",
+                about_p3: "Notre mission est d'unir les amateurs de cette icône culinaire, de favoriser l'échange d'idées et de savourer ensemble la passion du goût. Installez-vous confortablement, servez-vous une tranche et rejoignez-nous pour ce festin de saveurs !"
+            },
+            de: {
+                title: "Capas Pizzeria",
+                rainbow_text: "Danke, dass du Capas Pizzeria beigetreten bist!",
+                nav_members: "Mitglieder",
+                nav_about: "Über uns",
+                nav_alice: "Alice-C2",
+                about_title: "Über uns",
+                about_p1: "Willkommen in der Capas Pizzeria Community! Hier feiern wir die Liebe zur Pizza, vom knusprigen Teig und geschmolzenem Käse bis hin zu Zutatenkombinationen, die Leidenschaften entfachen.",
+                about_p2: "In diesem Raum teilen wir hausgemachte Rezepte, Pizzeria-Empfehlungen und Kochtipps. Zudem sind wir eine dynamische Community, die thematische Veranstaltungen und Diskussionen über die beste Pizza organisiert.",
+                about_p3: "Unsere Mission ist es, Pizzaliebhaber zu vereinen, den Austausch von Ideen zu fördern und gemeinsam die Leidenschaft für Geschmack zu genießen. Mach es dir gemütlich, nimm dir ein Stück und schließ dich uns bei diesem Festmahl an!"
+            },
+            it: {
+                title: "Capas Pizzeria",
+                rainbow_text: "Grazie per esserti unito a Capas Pizzeria!",
+                nav_members: "Membri",
+                nav_about: "Chi siamo",
+                nav_alice: "Alice-C2",
+                about_title: "Chi siamo",
+                about_p1: "Benvenuti nella comunità di Capas Pizzeria! Qui celebriamo l'amore per la pizza, dalla croccantezza dell'impasto e dal formaggio fuso fino alle combinazioni di ingredienti che accendono passioni.",
+                about_p2: "In questo spazio condividiamo ricette fatte in casa, raccomandazioni per pizzerie e consigli di cucina. Inoltre, siamo una comunità dinamica che organizza eventi a tema e dibattiti su quale sia la migliore pizza.",
+                about_p3: "La nostra missione è unire gli amanti della pizza, favorire lo scambio di idee e godere insieme della passione per il gusto. Mettiti comodo, prendi una fetta e unisciti a noi in questa festa del sapore!"
+            },
+            pt: {
+                title: "Capas Pizzeria",
+                rainbow_text: "Obrigado por se juntar à Capas Pizzeria!",
+                nav_members: "Membros",
+                nav_about: "Quem somos",
+                nav_alice: "Alice-C2",
+                about_title: "Quem somos",
+                about_p1: "Bem-vindo à comunidade Capas Pizzeria! Aqui celebramos o amor pela pizza, desde a massa crocante e o queijo derretido até combinações de ingredientes que despertam paixões.",
+                about_p2: "Neste espaço, compartilhamos receitas caseiras, recomendações de pizzarias e dicas de culinária. Além disso, somos uma comunidade dinâmica que organiza eventos temáticos e debates sobre qual é a melhor pizza.",
+                about_p3: "Nossa missão é unir os amantes da pizza, promover a troca de ideias e aproveitar juntos a paixão pelo sabor. Fique confortável, sirva-se de uma fatia e junte-se a nós nesta festa de sabores!"
+            }
+        };
+        languageSelector.addEventListener('change', (e) => {
+            translatePage(e.target.value);
+            desktopLanguageSelector.value = e.target.value;
+        });
+        desktopLanguageSelector.addEventListener('change', (e) => {
+            translatePage(e.target.value);
+            languageSelector.value = e.target.value;
+        });
+        translatePage(languageSelector.value);
+    </script>
+</body>
+
+</html>
